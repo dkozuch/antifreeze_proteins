@@ -1,0 +1,114 @@
+#!/bin/bash
+#PBS -l nodes=1:ppn=16,walltime=72:00:00
+#PBS -N 1hg7
+#PBS -m abe
+#PBS -M dkozuch@princeton.edu
+
+# go to the directory where this job is being submitted
+cd $PBS_O_WORKDIR
+
+#Load necessary modules
+module load openmpi
+module load intel
+
+# Create temporary directory on a local node 
+# - ALL JOBS MUST RUN ON THE LOCAL NODE, NOT THE HEAD NODE
+rm -r /tmp/$USER
+mkdir /tmp/$USER
+mkdir /tmp/$USER/$PBS_JOBID
+
+# Move into the temporary directory
+cd /tmp/$USER/$PBS_JOBID
+
+# copy necessary files to the temporary directory (below is in case you need to copy all)
+cp -r $PBS_O_WORKDIR/* ./
+
+#Add libraries to path
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/dkozuch/programs/libmatheval/lib
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/dkozuch/programs/plumed_232/lib
+
+#Define variables
+protein=1hg7
+gmx=gmx_514
+water_dynamics_file=getWaterDynamics.py
+scoring_file=antifreeze_score_v7.40_ev
+
+kdist=1.1
+bns=40
+ens=60
+
+b=$(echo "$bns*1000" | bc)
+e=$(echo "$ens*1000" | bc)
+
+#Remove old logs
+rm mdrun_*
+rm grompp_*
+
+#minim
+echo "Performing minimization"
+mpirun -n 1 ${gmx} grompp -f minim -c ${protein}_ions.gro -p topol.top -n index.ndx -o ${protein}_min > grompp_min.txt 2>&1
+mpirun ${gmx} mdrun -deffnm ${protein}_min > mdrun_min.txt 2>&1
+        
+sh remove_backups.sh
+cp ./* $PBS_O_WORKDIR/
+
+#eq
+echo "Performing equilibration"
+mpirun -n 1 ${gmx} grompp -f eq -c ${protein}_min.gro -p topol.top -n index.ndx -o ${protein}_eq -maxwarn 1 > grompp_eq.txt 2>&1
+mpirun ${gmx} mdrun -deffnm ${protein}_eq > mdrun_eq.txt 2>&1
+
+sh remove_backups.sh
+cp ./* $PBS_O_WORKDIR/
+
+echo "Performing simulation"
+#sim
+mpirun -n 1 ${gmx} grompp -f sim -c ${protein}_eq.gro -t ${protein}_eq -p topol.top -n index.ndx -o ${protein}_sim > grompp_sim.txt 2>&1
+mpirun ${gmx} mdrun -deffnm ${protein}_sim -tunepme yes -pin on > mdrun_sim.txt 2>&1
+
+echo "Analyzing simulation"
+#get fitted trajectory
+mpirun -n 1 $gmx trjconv -f ${protein}_sim -s ${protein}_eq -center -ur compact -pbc mol -b $b -e $e -o ${protein}_sim_b${bns}e${ens}ns <<EOF
+2
+0
+EOF
+
+#get SASA
+mpirun -n 1 $gmx sasa -f ${protein}_sim_b${bns}e${ens}ns -s ${protein}_eq -b $b -e $e -or sasa_r_b${bns}e${ens}ns -oa sasa_a_b${bns}e${ens}ns <<EOF
+1
+EOF
+
+#get average coordinates
+mpirun -n 1 $gmx rmsf -f ${protein}_sim_b${bns}e${ens}ns -s ${protein}_eq -ox ${protein}_sim_b${bns}e${ens}ns_avg.pdb <<EOF
+1
+EOF
+
+sh remove_backups.sh
+cp ./* $PBS_O_WORKDIR/
+
+#get water dynamics
+cutoff=8
+hbl_folder=HBL_0t${cutoff}A_b${bns}e${ens}ns
+sed -i "/^protein_name = /c\protein_name = "\""${protein}"\""" $water_dynamics_file
+sed -i "/^b =/c\b = "\""${bns}"\""" $water_dynamics_file
+sed -i "/^e =/c\e = "\""${ens}"\""" $water_dynamics_file
+sed -i "/^cutoff =/c\cutoff = "${cutoff}"" $water_dynamics_file
+echo "Running "$water_dynamics_file" ..."
+python $water_dynamics_file > tmp_waterDynamics.log 2>&1
+mkdir $hbl_folder
+mv hbl_* $hbl_folder
+
+cp ./* $PBS_O_WORKDIR/
+
+sh remove_backups.sh
+echo "Done"
+
+#get score
+python ${scoring_file}.py ${protein} $kdist $bns $ens > log_${scoring_file}_${protein}.txt
+
+# move results back
+cp -r /tmp/$USER/$PBS_JOBID/* $PBS_O_WORKDIR/
+
+# remove the local directory when all is done
+rm -r /tmp/$USER/$PBS_JOBID/
+
+

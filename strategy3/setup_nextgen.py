@@ -2,8 +2,8 @@ import numpy as np
 import os
 import sys
 
-protein = "1ucs"
-python_file="log_antifreeze_score_v7.30_ev"
+protein = "1hg7"
+python_file="log_antifreeze_score_v7.40_ev"
 
 exec_flag = False
 if len(sys.argv) > 2:

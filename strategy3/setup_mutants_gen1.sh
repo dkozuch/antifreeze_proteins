@@ -1,15 +1,15 @@
 #!/bin/bash
 
-gmx=gmx_514
-scoring=antifreeze_score_v7.30_ev.py
+gmx=gmx_164_pd241
+scoring=antifreeze_score_v7.40_ev.py
 
 generation=1
 prev_gen=$(echo "$generation-1" | bc)
 best_prev_mut=0
 mkdir $generation
 
-protein=1ucs
-mutant=Q44V
+protein=1hg7
+mutant=K62V
 
 sim_num=17
 mutant_number=$(echo $mutant | sed 's/[^0-9]*//g') #collected number from string

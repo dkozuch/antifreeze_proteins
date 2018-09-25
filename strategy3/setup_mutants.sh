@@ -1,16 +1,16 @@
 #!/bin/bash
 
-gmx=gmx_514
-scoring=antifreeze_score_v7.30_ev.py
+gmx=gmx_164_gpu_pd241
+scoring=antifreeze_score_v7.40_ev.py
 
-generation=26
+generation=4
 #prev_gen is not the actual prev_gen, but the BEST prev_gen
-prev_gen=20
-best_prev_mut=15
+prev_gen=1
+best_prev_mut=10
 mkdir $generation
 
-protein=1ucs
-mutant=G8V
+protein=1hg7
+mutant=Q45V
 
 sim_num=17
 mutant_number=$(echo $mutant | sed 's/[^0-9]*//g') #collected number from string
@@ -67,12 +67,12 @@ sh prepare_protein.sh
 mv slurm_${protein}_265K.cmd slurm_${name}.cmd
 sed -i "/protein=/c\protein=$name" slurm_${name}.cmd
 
-mv pbs_${protein}_265K.pbs pbs_${name}.pbs
-sed -i "/protein=/c\protein=$name" pbs_${name}.pbs
-sed -i "/#PBS -N/c\#PBS -N $name" pbs_${name}.pbs
+#mv pbs_${protein}_265K.pbs pbs_${name}.pbs
+#sed -i "/protein=/c\protein=$name" pbs_${name}.pbs
+#sed -i "/#PBS -N/c\#PBS -N $name" pbs_${name}.pbs
 
-#sbatch slurm_${name}.cmd
-qsub pbs_${name}.pbs
+sbatch slurm_${name}.cmd
+#qsub pbs_${name}.pbs
 
 cd ../../
 

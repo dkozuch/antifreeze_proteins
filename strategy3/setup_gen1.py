@@ -7,8 +7,8 @@ if len(sys.argv) > 1:
 	if sys.argv[1] == "execute":
 		exec_flag = True
 
-log_file = "0/log_antifreeze_score_v7.30_ev_1ucs.txt"
-fasta_file = "0/1ucs.fasta.txt"
+log_file = "0/log_antifreeze_score_v7.40_ev_1hg7.txt"
+fasta_file = "0/1hg7.fasta.txt"
 
 aa_lib = ["A", "C", "D", "E", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V"] #no F,W,Y so we can run on 18 node therminator (aromatics too big anyway)
 print aa_lib
