@@ -22,10 +22,11 @@ module load intel
 
 nt=3
 nr=4
+gpu_id=0000
 export OMP_NUM_THREADS=$nt
 
 protein=1hg7
-gmx=gmx_183
+gmx=gmx_164_gpu_pd241
 water_dynamics_file=getWaterDynamics.py
 scoring_file=antifreeze_score_v7.40_ev
 
@@ -43,21 +44,21 @@ rm grompp_*
 #minim
 echo "Performing minimization"
 ${gmx} grompp -f minim -c ${protein}_ions.gro -p topol.top -n index.ndx -o ${protein}_min > grompp_min.txt 2>&1
-srun -n $nr ${gmx} mdrun -deffnm ${protein}_min -ntomp $nt > mdrun_min.txt 2>&1
+srun -n $nr ${gmx} mdrun -deffnm ${protein}_min -ntomp $nt -gpu_id $gpu_id > mdrun_min.txt 2>&1
         
 sh remove_backups.sh
 
 #eq
 echo "Performing equilibration"
 ${gmx} grompp -f eq -c ${protein}_min.gro -p topol.top -n index.ndx -o ${protein}_eq -maxwarn 1 > grompp_eq.txt 2>&1
-srun -n $nr ${gmx} mdrun -deffnm ${protein}_eq -tunepme yes -ntomp $nt > mdrun_eq.txt 2>&1
+srun -n $nr ${gmx} mdrun -deffnm ${protein}_eq -tunepme yes -ntomp $nt -gpu_id $gpu_id > mdrun_eq.txt 2>&1
 
 sh remove_backups.sh
 
 echo "Performing simulation"
 #sim
 ${gmx} grompp -f sim -c ${protein}_eq.gro -t ${protein}_eq -p topol.top -n index.ndx -o ${protein}_sim > grompp_sim.txt 2>&1
-srun -n $nr ${gmx} mdrun -deffnm ${protein}_sim -tunepme yes -ntomp $nt > mdrun_sim.txt 2>&1
+srun -n $nr ${gmx} mdrun -deffnm ${protein}_sim -tunepme yes -ntomp $nt -gpu_id $gpu_id > mdrun_sim.txt 2>&1
 
 echo "Analyzing simulation"
 #get fitted trajectory

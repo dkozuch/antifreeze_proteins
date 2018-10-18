@@ -1,16 +1,16 @@
 #!/bin/bash
 
-gmx=gmx_164_gpu_pd241
+gmx=gmx_183
 scoring=antifreeze_score_v7.40_ev.py
 
-generation=4
+generation=20
 #prev_gen is not the actual prev_gen, but the BEST prev_gen
-prev_gen=1
-best_prev_mut=10
+prev_gen=12
+best_prev_mut=3
 mkdir $generation
 
 protein=1hg7
-mutant=Q45V
+mutant=M22V
 
 sim_num=17
 mutant_number=$(echo $mutant | sed 's/[^0-9]*//g') #collected number from string
@@ -30,7 +30,7 @@ cp ../../${prev_gen}/${best_prev_mut}/${protein}_${prev_gen}.${best_prev_mut}.fa
 cp ../../${prev_gen}/${best_prev_mut}/${protein}_${prev_gen}.${best_prev_mut}_sim.gro ./${protein}.gro
 cp ../../${prev_gen}/${best_prev_mut}/${protein}_${prev_gen}.${best_prev_mut}_sim.tpr ./${protein}_old.tpr
 cp ../../$scoring ./
-mpirun -n 1 $gmx trjconv -f ${protein}.gro -s ${protein}_old.tpr -o ${protein}.pdb <<EOF
+$gmx trjconv -f ${protein}.gro -s ${protein}_old.tpr -o ${protein}.pdb > tmp.txt 2>&1 <<EOF
 1
 EOF
 sed -i 's/OC1/OXT/g' ${protein}.pdb
@@ -59,10 +59,10 @@ echo $new_sequence
 echo $new_sequence > ${name}.fasta.txt
 
 #generate new pdb
-Scwrl4 -i ${protein}.pdb -s ${name}.fasta.txt -o ${name}.pdb
+Scwrl4 -i ${protein}.pdb -s ${name}.fasta.txt -o ${name}.pdb > scwrl_log.txt 2>&1
 
 sed -i "/protein=/c\protein=$name" prepare_protein.sh
-sh prepare_protein.sh
+sh prepare_protein.sh > prep_log.txt 2>&1
 
 mv slurm_${protein}_265K.cmd slurm_${name}.cmd
 sed -i "/protein=/c\protein=$name" slurm_${name}.cmd

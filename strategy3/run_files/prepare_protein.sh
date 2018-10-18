@@ -1,7 +1,7 @@
 #!/bin/bash
 
 protein=1hg7
-gmx=gmx_164_gpu_pd241
+gmx=gmx_183
 
 #build box and pdb2gmx (4 for tip4p ice)
 ${gmx} editconf -f ${protein}.pdb -resnr 0 -o ${protein}.pdb
@@ -14,7 +14,7 @@ EOF
 ${gmx} solvate -cp ${protein}_box.gro -cs tip4p2005.gro -p topol.top -o ${protein}_sol.gro
 
 #add ions (13 specifies ions should replace SOL molecules)
-${gmx} grompp -f ions.mdp -c ${protein}_sol.gro -p topol.top -o ions.tpr
+${gmx} grompp -f ions.mdp -c ${protein}_sol.gro -p topol.top -o ions.tpr -maxwarn 1
 ${gmx} genion -s ions.tpr -o ${protein}_ions.gro -p topol.top -pname NA -nname CL -neutral yes <<EOF
 13
 EOF
@@ -30,6 +30,6 @@ ${gmx} trjconv -f ${protein}_ions.gro -s ${protein}_min -ur compact -center -pbc
 2
 0
 EOF
-#mpirun -n 4 ${gmx} mdrun -v -deffnm ${protein}_min
+#${gmx} mdrun -v -deffnm ${protein}_min
 
 sh remove_backups.sh

@@ -19,10 +19,7 @@ num_mut = len(aa_lib)
 #print aa_lib
 
 def log_name(gen,mut=False,python_file=python_file,protein=protein):
-	if mut != False:
-		log_file = str(gen)+"/"+str(mut)+"/"+python_file +"_"+protein+"_"+str(gen)+"."+str(mut)+".txt"
-	else:
-		log_file = str(gen)+"/"+python_file +"_"+protein+"_"+str(gen)+".txt"
+	log_file = str(gen)+"/"+str(mut)+"/"+python_file +"_"+protein+"_"+str(gen)+"."+str(mut)+".txt"
 	return log_file
 
 def get_best_mutant(gen):
@@ -30,7 +27,7 @@ def get_best_mutant(gen):
 	scores = []
 	if gen == 0:
 		check = 0
-		with open(log_name(0),'r') as f:
+		with open(log_name(0,0),'r') as f:
 			for line in f:
 				if " ".join(line.split()[0:2]) == "Fitted Score:":
 					check = 1
@@ -41,7 +38,7 @@ def get_best_mutant(gen):
 	else:
 		for i in range(1,num_mut+1):
 			check = 0
-			with open(log_name(gen,mut=i),'r') as f:
+			with open(log_name(gen,i),'r') as f:
 				for line in f:
 					if " ".join(line.split()[0:2]) == "Fitted Score:":
 						check = 1
@@ -109,7 +106,7 @@ print mut_resids
 seqs = []
 for i in range(0,next_gen):
 	if i == 0:
-		fasta_file = str(i)+"/"+protein+".fasta.txt"
+		fasta_file = str(i)+"/0/"+protein+"_0.0.fasta.txt"
 		seq = get_fasta_seq(fasta_file)
 		seqs.append(seq)
 	else:
@@ -122,7 +119,7 @@ for i in range(0,next_gen):
 if best_gen != 0:
 	best_fasta_file = str(best_gen)+"/"+str(best_mut)+"/"+ protein+"_"+str(best_gen)+"."+str(best_mut)+".fasta.txt"
 else:
-	best_fasta_file = str(best_gen)+"/"+ protein+".fasta.txt"
+	best_fasta_file = str(best_gen)+"/0/"+ protein+"_0.0.fasta.txt"
 best_seq = get_fasta_seq(best_fasta_file)
 	
 #test if mutation position already tried - THIS ASSUMES that ALL residues in aa_lib are tried EACH TIME

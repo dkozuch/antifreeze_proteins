@@ -1,0 +1,3 @@
+generations 0 - 9 allowed mutations in IBS AND residues within k_neighbor of the IBS
+generations 2 - 9 showed no improvement
+starting with generation 10, mutations were only allowed within the IBS

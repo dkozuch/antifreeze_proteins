@@ -593,6 +593,8 @@ def get_res_mutation(max_face_residues,res_coords,decayTimeList):
 	'''find residues in binding face and NEAR binding face for possible mutation, identify residue with lowest HBL
 	returns list sorted by decayTime'''
 	mut_res_list = list(max_face_residues[:]) #stupid python
+
+#	Allow mutations near binding face
 	for a in max_face_residues:
 		for b in res_coords[:,0]:
 			if a != b and b not in mut_res_list:
@@ -641,7 +643,9 @@ print("Face scoring took: " + str(round(end_time - start_time,3)) + " seconds")
 #fitted_score = float(subprocess.check_output(exec_string,cwd="../nn_files/",shell=True))
 
 #interpolate fitted score from nerual network results - anything less than 0 or Nan is convertec to zero
-nn_data = np.load("nn_output.npy")
+nn_file = "nn_output_ext.npy"
+print "Neural net grid from file: "+nn_file
+nn_data = np.load(nn_file)
 point = [final_face_area,final_binding_hbl,final_nonbinding_hbl]
 fitted_score = np.max([0,griddata(nn_data[:,0:3],nn_data[:,3],point)])
 if np.isnan(fitted_score):

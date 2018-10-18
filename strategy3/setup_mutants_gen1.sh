@@ -1,6 +1,6 @@
 #!/bin/bash
 
-gmx=gmx_164_pd241
+gmx=gmx_164_gpu_pd241
 scoring=antifreeze_score_v7.40_ev.py
 
 generation=1
@@ -24,10 +24,10 @@ mkdir $folder
 cp run_files/* $folder
 cd $folder
 
-#copy gro file and sequence from previous best
-cp ../../${prev_gen}/${protein}.fasta.txt ./${protein}.fasta.txt
-cp ../../${prev_gen}/${protein}_sim.gro ./${protein}.gro
-cp ../../${prev_gen}/${protein}_sim.tpr ./${protein}_old.tpr
+#copy gro file and sequence from previous best (gen 0 since this file is only for gen 1)
+cp ../../${prev_gen}/${best_prev_mut}/${protein}_${prev_gen}.${best_prev_mut}.fasta.txt ./${protein}.fasta.txt
+cp ../../${prev_gen}/${best_prev_mut}/${protein}_sim.gro ./${protein}.gro
+cp ../../${prev_gen}/${best_prev_mut}/${protein}_sim.tpr ./${protein}_old.tpr
 cp ../../$scoring ./
 mpirun -n 1 $gmx trjconv -f ${protein}.gro -s ${protein}_old.tpr -o ${protein}.pdb <<EOF
 1

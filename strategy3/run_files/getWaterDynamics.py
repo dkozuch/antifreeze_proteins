@@ -7,7 +7,7 @@ import os
 from joblib import Parallel, delayed
 import multiprocessing
 
-threads=6
+threads=12
 protein_name = "1hg7"
 b = "40"
 e = "60"

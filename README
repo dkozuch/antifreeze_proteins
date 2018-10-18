@@ -1,0 +1,5 @@
+1. Evolve using linear scoring function, always mutate at worst location in best mutatn from current generation
+
+2. Evolve using linear scoring function, always mutate at worst location in best mutant observed so far
+
+3. Evolve using neural network (grid),  always mutate at worst location in best mutant observed so far

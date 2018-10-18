@@ -24,7 +24,7 @@ nt=1
 export OMP_NUM_THREADS=$nt
 
 protein=1hg7
-gmx=gmx_164_gpu_pd241
+gmx=gmx_183
 water_dynamics_file=getWaterDynamics.py
 scoring_file=antifreeze_score_v7.40_ev
 
